@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator IC50 — UIN Siber Syekh Nurjati Cirebon</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:        #1c6b3a;
+      --green-dark:   #144f2b;
+      --green-deeper: #0a2e18;
+      --gold:         #c8960c;
+      --gold-light:   rgba(198,150,12,0.18);
+      --glass-bg:     rgba(255,255,255,0.18);
+      --glass-border: rgba(255,255,255,0.35);
+      --glass-shadow: 0 8px 32px rgba(10,46,24,0.18);
+      --blur:         blur(18px);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 15% 20%, rgba(28,107,58,0.55) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 75%, rgba(200,150,12,0.30) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 10%, rgba(20,79,43,0.40) 0%, transparent 45%),
+        linear-gradient(145deg, #0a2e18 0%, #1a5c35 50%, #0e3a1f 100%);
+      color: #f0f7f3;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Orbs dekoratif ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+    .orb-1 { width: 420px; height: 420px; background: #1c6b3a; top: -100px; left: -80px; }
+    .orb-2 { width: 320px; height: 320px; background: #c8960c; bottom: -80px; right: -60px; }
+    .orb-3 { width: 220px; height: 220px; background: #144f2b; top: 40%; left: 60%; }
+
+    /* ── Header ─── */
+    header {
+      position: relative; z-index: 10;
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      background: rgba(10,46,24,0.55);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 16px 28px;
+      display: flex; align-items: center; gap: 14px;
+    }
+
+    .logo-circle {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.85);
+      text-align: center; line-height: 1.3; letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .header-divider {
+      width: 1px; height: 40px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    header h1 {
+      font-size: 1.25rem; font-weight: 700; color: #fff; line-height: 1.2;
+    }
+    header .sub {
+      font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-top: 2px;
+    }
+
+    /* ── Main ─── */
+    main {
+      flex: 1; position: relative; z-index: 5;
+      padding: 32px 16px 48px;
+    }
+
+    .container { max-width: 700px; margin: 0 auto; }
+
+    /* ── Glass card ─── */
+    .glass-card {
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: var(--glass-shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .glass-card h2 {
+      font-size: 0.85rem; font-weight: 600;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 18px;
+    }
+
+    /* ── Input ─── */
+    .col-labels {
+      display: flex; gap: 10px; margin-bottom: 8px;
+      padding-left: 34px; padding-right: 38px;
+    }
+    .col-labels span {
+      flex: 1; font-size: 0.72rem; font-weight: 600;
+      color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.07em;
+    }
+
+    .input-row {
+      display: flex; gap: 10px; margin-bottom: 10px; align-items: center;
+    }
+    .input-row label {
+      font-size: 0.8rem; color: rgba(255,255,255,0.4);
+      width: 24px; text-align: center; flex-shrink: 0;
+    }
+    .input-row input {
+      flex: 1; padding: 9px 12px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 8px;
+      font-size: 0.9rem; color: #fff;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+    .input-row input::placeholder { color: rgba(255,255,255,0.28); }
+    .input-row input:focus {
+      border-color: rgba(198,150,12,0.7);
+      background: rgba(255,255,255,0.16);
+      box-shadow: 0 0 0 3px rgba(198,150,12,0.15);
+    }
+    .btn-remove {
+      background: none; border: none;
+      color: rgba(255,255,255,0.3); cursor: pointer;
+      font-size: 1.1rem; padding: 4px 6px; border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .btn-remove:hover { color: #fc8181; }
+
+    .unit-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 14px; margin-bottom: 4px;
+    }
+    .unit-row label {
+      font-size: 0.8rem; color: rgba(255,255,255,0.55); white-space: nowrap;
+    }
+    .unit-row input {
+      width: 120px; padding: 7px 10px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 8px; font-size: 0.85rem; color: #fff; outline: none;
+      transition: border-color 0.15s;
+    }
+    .unit-row input:focus { border-color: rgba(198,150,12,0.7); }
+
+    .btn-add {
+      margin-top: 12px; width: 100%; cursor: pointer;
+      background: rgba(255,255,255,0.06);
+      border: 1px dashed rgba(255,255,255,0.25);
+      border-radius: 8px; padding: 8px;
+      font-size: 0.85rem; color: rgba(255,255,255,0.5);
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .btn-add:hover {
+      background: rgba(198,150,12,0.12);
+      border-color: rgba(198,150,12,0.5);
+      color: #f6c94e;
+    }
+
+    /* ── Hitung button ─── */
+    .btn-calculate {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--green) 0%, #28a05a 100%);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      font-size: 1rem; font-weight: 700; color: #fff;
+      cursor: pointer; letter-spacing: 0.04em;
+      box-shadow: 0 4px 18px rgba(28,107,58,0.45);
+      transition: filter 0.15s, transform 0.1s, box-shadow 0.15s;
+    }
+    .btn-calculate:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 24px rgba(28,107,58,0.55);
+    }
+    .btn-calculate:active { transform: scale(0.985); }
+
+    /* ── Error ─── */
+    .error-msg {
+      display: none;
+      background: rgba(252,129,129,0.12);
+      border: 1px solid rgba(252,129,129,0.35);
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 0.85rem; color: #fca5a5; margin-top: 12px;
+    }
+
+    /* ── Results ─── */
+    #result-section { display: none; }
+
+    .ic50-display {
+      background: linear-gradient(135deg, rgba(28,107,58,0.35), rgba(198,150,12,0.20));
+      border: 1px solid rgba(198,150,12,0.4);
+      border-radius: 12px; padding: 20px 24px;
+      display: flex; align-items: baseline; gap: 10px;
+      flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .ic50-label { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.6); }
+    .ic50-value { font-size: 2.2rem; font-weight: 800; color: #f6c94e; }
+    .ic50-unit  { font-size: 0.9rem; color: rgba(255,255,255,0.55); }
+    .regression-info {
+      margin-left: auto; text-align: right;
+      font-size: 0.78rem; color: rgba(255,255,255,0.45); line-height: 1.7;
+    }
+
+    /* ── Chart ─── */
+    #chart-wrap { margin-bottom: 22px; }
+    #regression-chart { display: block; width: 100%; border-radius: 10px; }
+
+    /* ── Table ─── */
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      padding: 9px 14px; text-align: left;
+      font-size: 0.72rem; font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase; letter-spacing: 0.07em;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    tbody td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.85);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,0.05); }
+
+    .badge {
+      display: inline-block;
+      background: rgba(28,107,58,0.45);
+      color: #86efac;
+      border-radius: 5px; padding: 1px 8px;
+      font-size: 0.72rem; font-weight: 700;
+    }
+
+    /* ── Footer ─── */
+    footer {
+      position: relative; z-index: 10;
+      text-align: center; padding: 14px;
+      font-size: 0.72rem; color: rgba(255,255,255,0.3);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<header>
+  <img src="https://uinssc.ac.id/assets/images/logo_uinssc_white_wo_fullname.png" style="height:52px;width:auto;flex-shrink:0;" alt="Logo UIN SSC">
+  <div class="header-divider"></div>
+  <div>
+    <h1>Kalkulator IC₅₀</h1>
+    <div class="sub">Regresi Linear — UIN Siber Syekh Nurjati Cirebon</div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- Input -->
+    <div class="glass-card">
+      <h2>Data Uji Antioksidan</h2>
+
+      <div class="col-labels">
+        <span>Konsentrasi</span>
+        <span>% Inhibisi</span>
+      </div>
+      <div id="rows-container"></div>
+      <button class="btn-add" onclick="addRow()">+ Tambah Baris Data</button>
+
+      <div class="unit-row">
+        <label>Satuan konsentrasi:</label>
+        <input id="unit-input" type="text" value="µg/mL" placeholder="µg/mL">
+      </div>
+    </div>
+
+    <!-- Tombol -->
+    <button class="btn-calculate" onclick="calculate()">Hitung IC₅₀</button>
+    <div class="error-msg" id="error-msg"></div>
+
+    <!-- Hasil -->
+    <div id="result-section">
+
+      <div class="glass-card" style="margin-top:24px">
+        <div class="ic50-display">
+          <span class="ic50-label">IC₅₀ =</span>
+          <span class="ic50-value" id="ic50-val">—</span>
+          <span class="ic50-unit" id="ic50-unit-label">µg/mL</span>
+          <div class="regression-info" id="regression-info"></div>
+        </div>
+        <div id="chart-wrap">
+          <canvas id="regression-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <h2>Tabel Data vs Prediksi</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Konsentrasi</th>
+              <th>Inhibisi Aktual</th>
+              <th>Inhibisi Prediksi</th>
+              <th>Selisih</th>
+            </tr>
+          </thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>© UIN Siber Syekh Nurjati Cirebon — Kalkulator IC₅₀ v2</footer>
+
+<script>
+  let rowId = 0;
+
+  function addRow(conc = '', inhib = '') {
+    const id = ++rowId;
+    const div = document.createElement('div');
+    div.className = 'input-row';
+    div.id = 'row-' + id;
+    div.innerHTML = `
+      <label>${id}</label>
+      <input type="number" placeholder="mis. 10" step="any" class="conc-input" value="${conc}">
+      <input type="number" placeholder="mis. 25.4" step="any" min="0" max="100" class="inhib-input" value="${inhib}">
+      <button class="btn-remove" onclick="removeRow(${id})" title="Hapus">×</button>
+    `;
+    document.getElementById('rows-container').appendChild(div);
+  }
+
+  function removeRow(id) {
+    const el = document.getElementById('row-' + id);
+    if (el) el.remove();
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.style.display = 'block';
+  }
+  function hideError() {
+    document.getElementById('error-msg').style.display = 'none';
+  }
+
+  function linearRegression(xs, ys) {
+    const n = xs.length;
+    const sumX  = xs.reduce((a,b) => a+b, 0);
+    const sumY  = ys.reduce((a,b) => a+b, 0);
+    const sumXY = xs.reduce((s,x,i) => s + x*ys[i], 0);
+    const sumX2 = xs.reduce((s,x) => s + x*x, 0);
+    const m = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+    const b = (sumY - m*sumX) / n;
+    const yMean = sumY/n;
+    const ssTot = ys.reduce((s,y) => s+(y-yMean)**2, 0);
+    const ssRes = ys.reduce((s,y,i) => s+(y-(m*xs[i]+b))**2, 0);
+    const r2 = ssTot === 0 ? 1 : 1 - ssRes/ssTot;
+    return { m, b, r2 };
+  }
+
+  function drawChart(xs, ys, m, b, ic50, unit) {
+    const canvas = document.getElementById('regression-chart');
+    const dpr = window.devicePixelRatio || 1;
+    const W_CSS = canvas.parentElement.offsetWidth;
+    const H_CSS = 320;
+    canvas.width  = W_CSS * dpr;
+    canvas.height = H_CSS * dpr;
+    canvas.style.height = H_CSS + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const W = W_CSS, H = H_CSS;
+    const pad = { top:28, right:52, bottom:54, left:56 };
+    const pw = W - pad.left - pad.right;
+    const ph = H - pad.top - pad.bottom;
+
+    const xMax = Math.max(...xs) * 1.15;
+    const xMin = 0, yMin = 0, yMax = 100;
+    const cx = x => pad.left + (x-xMin)/(xMax-xMin)*pw;
+    const cy = y => pad.top  + ph - (y-yMin)/(yMax-yMin)*ph;
+
+    // background putih bersih (publikasi-friendly)
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(0, 0, W, H, 10);
+    ctx.fill();
+
+    // plot area
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(pad.left, pad.top, pw, ph);
+
+    const font = (size, w='normal') => `${w} ${size}px 'Segoe UI', system-ui, sans-serif`;
+
+    // grid + labels y
+    for (let yv = 0; yv <= 100; yv += 20) {
+      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(pad.left, cy(yv)); ctx.lineTo(pad.left+pw, cy(yv)); ctx.stroke();
+      ctx.fillStyle = '#64748b'; ctx.font = font(11);
+      ctx.textAlign = 'right'; ctx.fillText(yv+'%', pad.left-7, cy(yv)+4);
+    }
+
+    // grid + labels x
+    for (let i = 0; i <= 5; i++) {
+      const xv = xMin + (xMax-xMin)*i/5;
+      ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cx(xv), pad.top); ctx.lineTo(cx(xv), pad.top+ph); ctx.stroke();
+      ctx.fillStyle = '#64748b'; ctx.font = font(11);
+      ctx.textAlign = 'center';
+      ctx.fillText(xv.toFixed(xv<1?2:0), cx(xv), pad.top+ph+16);
+    }
+
+    // axes
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top+ph);
+    ctx.lineTo(pad.left+pw, pad.top+ph); ctx.stroke();
+
+    // 50% garis emas
+    ctx.strokeStyle = '#c8960c'; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(pad.left, cy(50)); ctx.lineTo(pad.left+pw, cy(50)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#c8960c'; ctx.font = font(11,'bold');
+    ctx.textAlign = 'left'; ctx.fillText('50%', pad.left+pw+5, cy(50)+4);
+
+    // regression line
+    ctx.strokeStyle = '#1c6b3a'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(cx(xMin), cy(m*xMin+b)); ctx.lineTo(cx(xMax), cy(m*xMax+b)); ctx.stroke();
+
+    // IC50 vertical
+    if (ic50 >= xMin && ic50 <= xMax) {
+      ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]);
+      ctx.beginPath(); ctx.moveTo(cx(ic50), pad.top); ctx.lineTo(cx(ic50), pad.top+ph); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#dc2626'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx(ic50), cy(50), 6, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#dc2626'; ctx.font = font(11,'bold');
+      ctx.textAlign = 'center'; ctx.fillText('IC₅₀', cx(ic50), pad.top+ph+32);
+      ctx.font = font(10); ctx.fillText(ic50.toFixed(2), cx(ic50), pad.top+ph+44);
+    }
+
+    // data points
+    xs.forEach((x,i) => {
+      ctx.fillStyle = '#1c6b3a'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx(x), cy(ys[i]), 6, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    });
+
+    // axis labels
+    ctx.fillStyle = '#475569'; ctx.font = font(12);
+    ctx.textAlign = 'center';
+    ctx.fillText(`Konsentrasi (${unit})`, pad.left+pw/2, H-6);
+    ctx.save(); ctx.translate(13, pad.top+ph/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('% Inhibisi', 0, 0); ctx.restore();
+
+    // legend
+    const lx = pad.left+10, ly = pad.top+12;
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.beginPath(); ctx.roundRect(lx-6, ly-10, 148, 54, 6); ctx.fill();
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.strokeStyle = '#1c6b3a'; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(lx, ly+4); ctx.lineTo(lx+26, ly+4); ctx.stroke();
+    ctx.fillStyle = '#334155'; ctx.font = font(11);
+    ctx.textAlign = 'left'; ctx.fillText('Garis Regresi', lx+32, ly+8);
+
+    ctx.fillStyle = '#1c6b3a'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(lx+13, ly+28, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#334155'; ctx.font = font(11);
+    ctx.textAlign = 'left'; ctx.fillText('Data Aktual', lx+32, ly+32);
+  }
+
+  function calculate() {
+    hideError();
+    const concInputs  = document.querySelectorAll('.conc-input');
+    const inhibInputs = document.querySelectorAll('.inhib-input');
+    const xs = [], ys = [];
+    concInputs.forEach((el,i) => {
+      const x = parseFloat(el.value), y = parseFloat(inhibInputs[i].value);
+      if (!isNaN(x) && !isNaN(y)) { xs.push(x); ys.push(y); }
+    });
+
+    if (xs.length < 2) {
+      showError('Minimal 2 pasang data valid diperlukan untuk regresi linear.'); return;
+    }
+    const { m, b, r2 } = linearRegression(xs, ys);
+    if (Math.abs(m) < 1e-12) {
+      showError('Slope mendekati nol — regresi tidak dapat menentukan IC₅₀.'); return;
+    }
+    const ic50 = (50 - b) / m;
+    if (ic50 <= 0) {
+      showError(`IC₅₀ bernilai negatif (${ic50.toFixed(4)}). Periksa data — inhibisi mungkin sudah >50% di konsentrasi terendah.`); return;
+    }
+
+    const unit = document.getElementById('unit-input').value.trim() || 'µg/mL';
+    document.getElementById('ic50-val').textContent = ic50.toFixed(4);
+    document.getElementById('ic50-unit-label').textContent = unit;
+    document.getElementById('regression-info').innerHTML =
+      `y = ${m.toFixed(4)}x + (${b.toFixed(4)})<br>R² = ${r2.toFixed(4)}`;
+
+    const tbody = document.getElementById('result-tbody');
+    tbody.innerHTML = '';
+    xs.forEach((x,i) => {
+      const predicted = m*x + b;
+      const diff = ys[i] - predicted;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="badge">${i+1}</span></td>
+        <td>${x} ${unit}</td>
+        <td>${ys[i].toFixed(2)}%</td>
+        <td>${predicted.toFixed(2)}%</td>
+        <td style="color:${Math.abs(diff)>5?'#fca5a5':'#86efac'}">
+          ${diff>=0?'+':''}${diff.toFixed(2)}%
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('result-section').style.display = 'block';
+    requestAnimationFrame(() => {
+      drawChart(xs, ys, m, b, ic50, unit);
+      document.getElementById('result-section').scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+  }
+
+  // Data contoh awal
+  [[10,12.5],[25,28.3],[50,49.1],[100,74.6],[200,91.2]]
+    .forEach(([c,i]) => addRow(c,i));
+</script>
+</body>
+</html>
